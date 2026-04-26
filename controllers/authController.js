@@ -5,23 +5,35 @@ const jwt = require("jsonwebtoken");
 // ✅ Signup
 exports.signup = async (req, res) => {
   try {
+    console.log("📥 BODY:", req.body);
+
     const { name, email, password } = req.body;
 
+    if (!name || !email || !password) {
+      return res.status(400).json({ msg: "All fields required" });
+    }
+
     const userExists = await User.findOne({ email });
+    console.log("USER EXISTS:", userExists);
+
     if (userExists) {
       return res.status(400).json({ msg: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await User.create({
+    const user = await User.create({
       name,
       email,
       password: hashedPassword,
     });
 
+    console.log("✅ USER CREATED:", user);
+
     res.json({ msg: "Signup successful" });
+
   } catch (err) {
+    console.log("🔥 SIGNUP ERROR:", err);
     res.status(500).json({ msg: "Server error" });
   }
 };
