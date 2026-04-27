@@ -2,17 +2,20 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 
-const authRoutes = require("../routes/authRoutes");
+const authRoutes = require("./routes/authRoutes"); // <- ./ not ../
 
 const app = express();
 
 app.use(cors({ origin: "*" }));
 app.use(express.json());
-
 app.use("/api/auth", authRoutes);
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("Mongo connected"))
-  .catch(err => console.log(err));
+let isConnected = false;
 
-module.exports = app;
+module.exports = async (req, res) => {
+  if (!isConnected) {
+    await mongoose.connect(process.env.MONGO_URI);
+    isConnected = true;
+  }
+  return app(req, res);
+};
